@@ -37,3 +37,21 @@ page source.
 Company details, prices, testimonial and photos come from the previous Wix site and
 the Companies Register. The process steps and FAQ answers are drafted as standard
 practice for the trade and should be checked by the owner.
+
+## Frontend maintenance
+
+Typography uses local system fonts; the site makes no font or CDN requests.
+Photographs have 480px and full-size WebP variants, with original JPEG fallbacks.
+Keep each pair's dimensions and crop aligned when replacing comparison photos.
+The hero preloads its after photo; gallery images load lazily with reserved space.
+
+The quote form keeps a native POST to FormSubmit. JavaScript adds inline errors,
+a sending state and a hosting-aware return URL. Without JavaScript, native browser
+validation remains available and the return URL uses the production thanks page.
+A request is not a confirmed booking. Delivery still requires FormSubmit activation.
+Navigation and comparison photographs remain available without JavaScript.
+
+There is no build, lint or test script in this repository. Before release, check
+all five pages at mobile and desktop widths, keyboard navigation and comparisons,
+form validation, local links and JSON-LD. Test form delivery only with an approved
+real enquiry; do not send automated test submissions to the live endpoint.
