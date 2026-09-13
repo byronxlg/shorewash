@@ -130,8 +130,8 @@ if (form) {
   });
 }
 
-// Keep the staging copy out of search results.
-if (/(^|\.)github\.io$/.test(window.location.hostname)) {
+// Keep the preview copies (github.io, botsmith.dev) out of search results.
+if (/(^|\.)(github\.io|botsmith\.dev)$/.test(window.location.hostname)) {
   var m = document.querySelector('meta[name="robots"]') || document.createElement('meta');
   m.name = 'robots';
   m.content = 'noindex';
