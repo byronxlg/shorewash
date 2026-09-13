@@ -1,4 +1,6 @@
-// Native range controls support keyboard, mouse and touch.
+// Before / after sliders. Pointer events on the figure drive the value so a
+// finger or mouse can start anywhere on the photo (a native range only moves
+// from its thumb on touch screens). The range input stays for keyboard users.
 document.querySelectorAll('[data-compare]').forEach(function (el) {
   var range = el.querySelector('.compare-range');
   if (!range) return;
@@ -6,6 +8,27 @@ document.querySelectorAll('[data-compare]').forEach(function (el) {
     el.style.setProperty('--pos', range.value + '%');
     range.setAttribute('aria-valuetext', range.value + '% before, ' + (100 - range.value) + '% after');
   };
+  var fromPointer = function (e) {
+    var rect = el.getBoundingClientRect();
+    if (!rect.width) return;
+    var pct = Math.round((e.clientX - rect.left) / rect.width * 100);
+    range.value = Math.max(0, Math.min(100, pct));
+    update();
+  };
+  var dragging = false;
+  el.addEventListener('pointerdown', function (e) {
+    if (e.pointerType === 'mouse' && e.button !== 0) return;
+    dragging = true;
+    if (el.setPointerCapture) el.setPointerCapture(e.pointerId);
+    e.preventDefault();
+    fromPointer(e);
+  });
+  el.addEventListener('pointermove', function (e) {
+    if (dragging) fromPointer(e);
+  });
+  ['pointerup', 'pointercancel', 'lostpointercapture'].forEach(function (name) {
+    el.addEventListener(name, function () { dragging = false; });
+  });
   range.addEventListener('input', update);
   el.classList.add('compare-ready');
   update();

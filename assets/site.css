@@ -237,6 +237,9 @@ p { margin: 0 0 1em; max-width: var(--measure); }
   --pos: 50%;
   isolation: isolate;
   margin-inline: auto;
+  touch-action: pan-y;
+  user-select: none;
+  -webkit-user-select: none;
 }
 @media (max-width: 860px) { .compare { max-height: none; } }
 .compare img {
@@ -245,6 +248,8 @@ p { margin: 0 0 1em; max-width: var(--measure); }
   width: 100%;
   height: 100%;
   object-fit: cover;
+  -webkit-user-drag: none;
+  -webkit-touch-callout: none;
 }
 .compare .compare-before { clip-path: inset(0 calc(100% - var(--pos)) 0 0); }
 .compare-handle {
@@ -278,12 +283,12 @@ p { margin: 0 0 1em; max-width: var(--measure); }
   height: 100%;
   margin: 0;
   opacity: 0;
-  cursor: ew-resize;
   z-index: 3;
   -webkit-appearance: none;
   appearance: none;
-  touch-action: pan-y;
 }
+.compare-ready { cursor: ew-resize; }
+.compare-ready .compare-range { pointer-events: none; }
 .compare:focus-within { outline: 3px solid var(--ocean);
   box-shadow: 0 0 0 6px var(--white); outline-offset: 3px; }
 .compare-label {
@@ -583,8 +588,6 @@ p { margin: 0 0 1em; max-width: var(--measure); }
 .compare:not(.compare-ready) img { position: static; height: 100%; clip-path: none; }
 .compare:not(.compare-ready) .compare-range,
 .compare:not(.compare-ready) .compare-handle { display: none; }
-.compare-ready .compare-range::-webkit-slider-thumb { -webkit-appearance: none; width: 2px; height: 100%; }
-.compare-ready .compare-range::-moz-range-thumb { width: 2px; height: 100%; border: 0; }
 .compare-label { background: var(--navy-deep); }
 .form-intro { font-size: 0.95rem; }
 .form-status { min-height: 1.6em; font-weight: 600; font-size: 0.95rem; }
