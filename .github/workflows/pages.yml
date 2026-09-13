@@ -22,11 +22,11 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
-      - name: Check HTML links resolve
+      - name: Check local links and assets resolve
         run: |
           set -e
           for f in index.html privacy.html accessibility.html thanks.html 404.html; do
-            for ref in $(grep -o 'href="[^"#h][^"]*"\|src="[^"h][^"]*"' "$f" | sed 's/.*="\(.*\)"/\1/' | sort -u); do
+            for ref in $(grep -o '\(href\|src\)="[^"]*"' "$f" | sed 's/.*="\(.*\)"/\1/' | grep -v '^#' | grep -v '^[a-z]*:' | sed 's/[#?].*//' | sort -u); do
               [ -f "$ref" ] || { echo "$f: missing $ref"; exit 1; }
             done
           done
