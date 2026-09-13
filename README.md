@@ -7,9 +7,11 @@ No build step.
 ## Hosting
 
 Deployed to GitHub Pages by `.github/workflows/pages.yml` on every push to `main`.
-Staging URL: https://byronxlg.github.io/shorewash/
+Preview URL: https://shorewash.botsmith.dev/ (GitHub Pages custom domain; DNS in
+`byronxlg/x402-services` `infra/botsmith.tf`). The old https://byronxlg.github.io/shorewash/
+redirects there.
 
-`assets/site.js` adds `noindex` while the site is served from `github.io`, so the
+`assets/site.js` adds `noindex` while the site is served from `github.io` or `botsmith.dev`, so the
 staging copy does not compete with the real domain in search.
 
 ## Going live on shorewash.co.nz
@@ -17,12 +19,12 @@ staging copy does not compete with the real domain in search.
 The domain currently points at Wix (GoDaddy DNS, `ns31/ns32.domaincontrol.com`).
 To cut over:
 
-1. Add a `CNAME` file containing `www.shorewash.co.nz` to this repo.
+1. Change the Pages custom domain from `shorewash.botsmith.dev` to `www.shorewash.co.nz`
+   (repo settings, or `gh api -X PUT repos/byronxlg/shorewash/pages -f cname=www.shorewash.co.nz`).
 2. In GoDaddy DNS: `www` CNAME -> `byronxlg.github.io`; apex `A` records ->
    GitHub Pages IPs (185.199.108.153, .109.153, .110.153, .111.153). Remove the
    Wix records.
-3. Repo settings -> Pages -> custom domain `www.shorewash.co.nz`, enforce HTTPS
-   once the certificate is issued.
+3. Enforce HTTPS in the Pages settings once the certificate is issued.
 
 ## Quote form
 
