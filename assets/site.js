@@ -1,40 +1,115 @@
-// Before/after sliders: the range input drives a CSS variable that clips the
-// "before" image. Native input, so it works with keyboard, mouse and touch.
+// Native range controls support keyboard, mouse and touch.
 document.querySelectorAll('[data-compare]').forEach(function (el) {
   var range = el.querySelector('.compare-range');
   if (!range) return;
-  var update = function () { el.style.setProperty('--pos', range.value + '%'); };
+  var update = function () {
+    el.style.setProperty('--pos', range.value + '%');
+    range.setAttribute('aria-valuetext', range.value + '% before, ' + (100 - range.value) + '% after');
+  };
   range.addEventListener('input', update);
+  el.classList.add('compare-ready');
   update();
 });
 
-// Mobile menu
 var toggle = document.querySelector('.nav-toggle');
 var nav = document.getElementById('nav');
 if (toggle && nav) {
+  var closeMenu = function () {
+    nav.classList.remove('is-open');
+    toggle.setAttribute('aria-expanded', 'false');
+  };
+  toggle.closest('.header').classList.add('nav-ready');
   toggle.addEventListener('click', function () {
     var open = nav.classList.toggle('is-open');
     toggle.setAttribute('aria-expanded', String(open));
   });
   nav.addEventListener('click', function (e) {
-    if (e.target.tagName === 'A') {
-      nav.classList.remove('is-open');
-      toggle.setAttribute('aria-expanded', 'false');
+    if (e.target.closest('a')) closeMenu();
+  });
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && nav.classList.contains('is-open')) {
+      closeMenu();
+      toggle.focus();
     }
+  });
+  document.addEventListener('click', function (e) {
+    if (!e.target.closest('.header')) closeMenu();
+  });
+  nav.addEventListener('focusout', function () {
+    setTimeout(function () {
+      if (!nav.contains(document.activeElement) && document.activeElement !== toggle) closeMenu();
+    }, 0);
+  });
+  window.matchMedia('(min-width: 861px)').addEventListener('change', closeMenu);
+}
+
+// Native POST stays on the existing endpoint, including without JavaScript.
+var next = document.getElementById('form-next');
+if (next) next.value = new URL('thanks.html', window.location.href).href;
+
+var form = document.getElementById('quote-form');
+if (form) {
+  var status = document.getElementById('form-status');
+  var submit = form.querySelector('button[type="submit"]');
+  var fields = Array.from(form.querySelectorAll('.field input, .field select, .field textarea'));
+  fields.forEach(function (field) {
+    var error = document.createElement('span');
+    error.id = field.id + '-error';
+    error.className = 'field-error';
+    field.parentNode.appendChild(error);
+    field.setAttribute('aria-describedby', [field.getAttribute('aria-describedby'), error.id].filter(Boolean).join(' '));
+    field.addEventListener('input', function () {
+      if (field.hasAttribute('aria-invalid')) validate(field);
+    });
+    field.addEventListener('blur', function () {
+      if (field.value || field.hasAttribute('aria-invalid')) validate(field);
+    });
+  });
+  function validate(field) {
+    var message = '';
+    field.setCustomValidity('');
+    if (field.required && !field.value.trim()) message = 'Please complete this field.';
+    else if (field.id === 'f-phone' && (field.value.replace(/\D/g, '').length < 7 || !field.validity.valid)) message = 'Enter a phone number with at least 7 digits, including the area code.';
+    else if (field.validity.typeMismatch) message = 'Enter an email address, such as name@example.co.nz.';
+    else if (!field.validity.valid) message = field.validationMessage;
+    field.setCustomValidity(message);
+    document.getElementById(field.id + '-error').textContent = message;
+    if (message) field.setAttribute('aria-invalid', 'true');
+    else field.removeAttribute('aria-invalid');
+    return !message;
+  }
+  form.noValidate = true;
+  form.addEventListener('submit', function (e) {
+    var invalid = fields.filter(function (field) { return !validate(field); });
+    if (invalid.length) {
+      e.preventDefault();
+      status.textContent = 'Please check the highlighted fields before sending.';
+      invalid[0].focus();
+      return;
+    }
+    if (submit.disabled) { e.preventDefault(); return; }
+    submit.disabled = true;
+    submit.textContent = 'Sending request…';
+    status.textContent = 'Sending your request. Please wait for the confirmation page.';
+    // Navigation failures must not leave the form permanently locked.
+    setTimeout(resetSubmit, 15000);
+  });
+  function resetSubmit() {
+    if (!submit.disabled) return;
+    submit.disabled = false;
+    submit.textContent = 'Send quote request';
+    status.textContent = 'No confirmation yet. If this page has not changed, check your connection and try again, or call us.';
+  }
+  window.addEventListener('pageshow', function () {
+    submit.disabled = false;
+    submit.textContent = 'Send quote request';
+    status.textContent = '';
   });
 }
 
-// The form service redirects to an absolute URL after a submission, so build it
-// from wherever the site is hosted (works on the staging host and the real domain).
-var next = document.getElementById('form-next');
-if (next) {
-  next.value = new URL('thanks.html', window.location.href).href;
-}
-
-// Keep search engines off the staging host. Remove this block once the site is
-// served from shorewash.co.nz only.
-if (/github\.io$/.test(window.location.hostname)) {
-  var m = document.createElement('meta');
+// Keep the staging copy out of search results.
+if (/(^|\.)github\.io$/.test(window.location.hostname)) {
+  var m = document.querySelector('meta[name="robots"]') || document.createElement('meta');
   m.name = 'robots';
   m.content = 'noindex';
   document.head.appendChild(m);
